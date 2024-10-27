@@ -1,5 +1,3 @@
-
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -8,122 +6,89 @@
 extern struct NODE* root;
 extern struct NODE* cwd;
 
-//make directory
-void mkdir(char pathName[]){
-
-    // TO BE IMPLEMENTED
-    //
-    // YOUR CODE TO REPLACE THE PRINTF FUNCTION BELOW
-    if (pathName == NULL || strlen(pathName) == 0) {
-	    printf("MKDIR ERROR: no path provided\n");
-	    return;
-    }
-
-    char baseName[64];
-    char dirName[64];
-    struct NODE* parentNode;
-
-    parentNode = splitPath(pathName, baseName, dirName);
-
-    if (parentNode == NULL) {
-	    return;
-    }
-
-    struct NODE* child = parentNode->childPtr;
-    while (child != NULL) {
-	    if (strcmp(child->name, baseName) == 0) {
-		    printf("MKDIR ERROR: directory %s already exists\n", baseName);
-		    return;
-	    }
-    	    child = child->siblingPtr;
-    }
-
-    struct NODE* newDir = (struct NODE*)malloc(sizeof(struct NODE));
-    if (newDir == NULL) {
-	    perror("MKDIR ERROR: memory allocation failed");
-	    return;
-    }
-    
-    strncpy(newDir->name, baseName, 63);
-    newDir->name[63] = '\0';
-    newDir->fileType = 'D';
-    newDir->childPtr = NULL;
-    newDir->siblingPtr = NULL;
-    newDir->parentPtr = parentNode;
-
-    if (parentNode->childPtr == NULL) {
-	    parentNode->childPtr = newDir;
-    } else {
-	    child = parentNode->childPtr;
-	    while (child->siblingPtr != NULL) {
-		    child = child->sibingPtr;
-            }
-	    child->siblingPtr = newDir;
-    }
-
-    printf("MKDIR SUCCESS: node %s successfully created\n", pathName);
-
-    return;
+struct NODE* helper(struct NODE* parent, char* dirName) {
+	struct NODE* currentNode = parent->childPtr;
+	while (currentNode != NULL) {
+		if (strcmp(currentNode->name, dirName) == 0) {
+			return currentNode;
+		}
+		currentNode = currentNode->siblingPtr;
+	}	
+	return NULL;
 }
 
-//handles tokenizing and absolute/relative pathing options
-struct NODE* splitPath(char* pathName, char* baseName, char* dirName){
 
-    // TO BE IMPLEMENTED
-    // NOTE THAT WITHOUT COMPLETING THIS FUNCTION CORRECTLY
-    // rm, rmdir, ls, cd, touch COMMANDS WILL NOT EXECUTE CORRECTLY
-    // SEE THE PROVIDED EXECUTABLE TO SEE THEIR EXPECTED BEHAVIOR
+// make directory
+void mkdir(char pathName[]) {
+	if (pathName == NULL || strlen(pathName) == 0) {
+		printf("MKDIR ERROR: no path provided");
+		return;
+	}
+	char baseName[64];
+	char dirName[64];
 
-    // YOUR CODE HERE
-    if (pathName == NULL || strlen(pathName) == 0) {
-	    dirName[0] = '\0';
-	    strcpy(baseName, "");
-	    return NULL;
-    }
+	struct NODE* parentNode = splitPath(pathName, baseName, dirName);
+	if (parentNode == NULL) {
+		return;
+	}
+	
+	struct NODE* newDir = (struct NODE*)malloc(sizeof(struct NODE));
+	if (newDir == NULL) {
+		perror("MKDIR: memory allocation failed");
+		return;
+	}
 
-    struct NODE* currentNode = NULL;
-    char* token;
-    char* saveptr;
-    char tempDir[64];
-    char* pathCopy = strdup(pathName);
-    dirName[0] = '\0';
-    
-    token = strtok_r(pathCopy, "/", &saveptr);
-    while (token != NULL) {
-	    struct NODE* child = currentNode->childPtr;
-	    int found = 0;
-	    while (child != NULL) {
-		    if (strcmp(child->name, token) == 0) {
-			    currentNode = child;
-			    found = 1;
-			    
-			    if (strlen(dirName) > 0) {
-				    strcat(dirName, "/");
-			    }
-			    strcat(dirName, token);
-			    break;
-		    }
-		    child = child->siblingPtr;
-	    }
+	strncpy(newDir->name, baseName, 63);
+	newDir->name[63] = '\0';
+	newDir->fileType = 'D';
+	newDir->childPtr = NULL;
+	newDir->siblingPtr = NULL;
+	newDir->parentPtr = parentNode;
+	
+	if (parentNode->childPtr == NULL) {
+		parentNode->childPtr = newDir;
+	} else {
+		struct NODE* child = parentNode->childPtr;
+		while (child->siblingPtr != NULL) {
+			child = child->siblingPtr;
+		}
+		child->siblingPtr = newDir;
+	}
 
-	    if (!found) {
-		    printf("ERROR: directory %s does not exist\n", token);
-		    free(pathCopy);
-		    return NULL;
-	    }
+	printf("MKDIR SUCCESS: node %s successfully created\n", pathName);
+}
 
-	    token = strtok_r(NULL, "/", &saveptr);
-    }
+struct NODE* splitPath(char* pathName, char* baseName, char* dirName) {
+	if (pathName == NULL || strlen(pathName) == 0) {
+		dirName[0] = '\0';
+		baseName[0] = '\0';
+		return NULL;
+	}
 
-    strcpy(baseName, token);
+	char* dirEnd = strrchr(pathName, '/');
 
-    if (strlen(dirName) == 0) {
-	    strcpy(dirName, "/");
-    }
+	if (dirEnd == NULL) {
+		strcpy(baseName, pathName);
+		dirName[0] = '\0';
+		return cwd;
+	}
 
-    // Printf for debugging
-    printf("pathName = %s\n", pathName);
-    printf("baseName = %s\n", baseName);
-    printf("dirName = %s\n", dirName);
-    return currentNode;
+	int offset = dirEnd - pathName;
+	strncpy(dirName, pathName, offset);
+	dirName[offset] = '\0';
+	strcpy(baseName, dirEnd + 1);
+
+	struct NODE* currentNode = (pathName[0] == '/') ? root: cwd;
+    	
+	char* token = strtok(dirName, "/");
+	while (token != NULL) {
+		currentNode = helper(currentNode, token);
+		if (currentNode == NULL) {
+			printf("ERROR: directory %s does not exist", token);
+			return NULL;
+		}
+		token = strtok(NULL, "/");
+	}
+
+	return currentNode;
 }
