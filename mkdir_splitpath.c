@@ -45,7 +45,7 @@ void mkdir(char pathName[]) {
 
 	struct NODE* newDir = (struct NODE*)malloc(sizeof(struct NODE));
 	if (newDir == NULL) {
-		perror("MKDIR: memory allocation failed\n");
+		// perror("MKDIR: memory allocation failed\n");
 		return;
 	}
 
@@ -67,6 +67,8 @@ void mkdir(char pathName[]) {
 	}
 
 	printf("MKDIR SUCCESS: node %s successfully created\n", pathName);
+
+	return;
 }
 
 struct NODE* splitPath(char* pathName, char* baseName, char* dirName) {
