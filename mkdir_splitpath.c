@@ -29,6 +29,7 @@ void mkdir(char pathName[]) {
 
 	struct NODE* parentNode = splitPath(pathName, baseName, dirName);
 	if (parentNode == NULL) {
+		printf("MKDIR ERROR: no path provided\n");
 		return;
 	}
 	
@@ -89,6 +90,7 @@ struct NODE* splitPath(char* pathName, char* baseName, char* dirName) {
 	if (dirEnd == pathName) {
 		strcpy(baseName, dirEnd + 1);
 		dirName[0] = '/';
+		return NULL;
 	} else {
 		int offset = dirEnd - pathName;
 		strncpy(dirName, pathName, offset);
