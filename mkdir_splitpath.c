@@ -32,6 +32,17 @@ void mkdir(char pathName[]) {
 		return;
 	}
 	
+	if (strlen(baseName) == 0) {
+		printf("MKDIR ERROR: no directory name provided\n");
+		return;
+	}
+	
+	struct NODE* existingDir = helper(parentNode, baseName);
+	if (existingDir != NULL) {
+		printf("MKDIR ERROR: directory %s already exists\n", baseName);
+		return;
+	}
+
 	struct NODE* newDir = (struct NODE*)malloc(sizeof(struct NODE));
 	if (newDir == NULL) {
 		perror("MKDIR: memory allocation failed");
