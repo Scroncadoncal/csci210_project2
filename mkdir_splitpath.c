@@ -21,7 +21,7 @@ struct NODE* helper(struct NODE* parent, char* dirName) {
 // make directory
 void mkdir(char pathName[]) {
 	if (pathName == NULL || strlen(pathName) == 0) {
-		printf("MKDIR ERROR: no path provided");
+		printf("MKDIR ERROR: no path provided\n");
 		return;
 	}
 	char baseName[64];
@@ -45,7 +45,7 @@ void mkdir(char pathName[]) {
 
 	struct NODE* newDir = (struct NODE*)malloc(sizeof(struct NODE));
 	if (newDir == NULL) {
-		perror("MKDIR: memory allocation failed");
+		perror("MKDIR: memory allocation failed\n");
 		return;
 	}
 
@@ -95,7 +95,7 @@ struct NODE* splitPath(char* pathName, char* baseName, char* dirName) {
 	while (token != NULL) {
 		currentNode = helper(currentNode, token);
 		if (currentNode == NULL) {
-			printf("ERROR: directory %s does not exist", token);
+			printf("ERROR: directory %s does not exist\n", token);
 			return NULL;
 		}
 		token = strtok(NULL, "/");
