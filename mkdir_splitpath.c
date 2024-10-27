@@ -86,10 +86,15 @@ struct NODE* splitPath(char* pathName, char* baseName, char* dirName) {
 		return cwd;
 	}
 
-	int offset = dirEnd - pathName;
-	strncpy(dirName, pathName, offset);
-	dirName[offset] = '\0';
-	strcpy(baseName, dirEnd + 1);
+	if (dirEnd == pathName) {
+		strcpy(baseName, dirEnd + 1);
+		dirName[0] = '/';
+	} else {
+		int offset = dirEnd - pathName;
+		strncpy(dirName, pathName, offset);
+		dirName[offset] = '\0';
+		strcpy(baseName, dirEnd + 1);
+	}
 
 	struct NODE* currentNode = (pathName[0] == '/') ? root: cwd;
     	
